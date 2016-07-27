@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class NewsCardAdapter extends ArrayAdapter<NewsCard> {
 
     public NewsCardAdapter(MainActivity context, ArrayList<NewsCard> resource) {
-        super(context, resource);
+        super(context, 0, resource);
     }
 
     @Override

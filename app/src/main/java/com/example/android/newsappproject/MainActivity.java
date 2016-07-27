@@ -1,7 +1,9 @@
 package com.example.android.newsappproject;
 
+import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.Loader;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -15,8 +17,11 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<ArrayList<NewsCard>> {
 
+    private static final String GUARDIAN_REQUEST_URL =
+            "http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&minmag=6&limit=10";
+    private NewsCardAdapter mAdapter;
     private ListView listView = (ListView) findViewById(R.id.list);
 
     @Override
@@ -27,7 +32,27 @@ public class MainActivity extends AppCompatActivity {
         if (checkConnectivity()) {
 
 
-            populateListView(listView);
+            ArrayList<NewsCard> NewsCards = new ArrayList<>();
+
+            mAdapter = new NewsCardAdapter(this, NewsCards);
+
+            listView.setAdapter(mAdapter);
+
+            LoaderManager loaderManager = getLoaderManager();
+
+            loaderManager.initLoader(1, null, this);
+
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                    NewsCard currentNewsCard = mAdapter.getItem(i);
+                    Uri newsCardUri = Uri.parse(currentNewsCard.getUrl());
+                    Intent websiteIntent = new Intent(Intent.ACTION_VIEW, newsCardUri);
+                    startActivity(websiteIntent);
+                }
+            });
 
         } else {
             Log.e("Connectivity", "The app cannot detect an Internet Connection");
@@ -37,28 +62,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void populateListView(ListView newsCardListView) {
-
-        final ArrayList<NewsCard> NewsCards = new ArrayList<>();
-
-        //get newscards from JSON
-
-        final NewsCardAdapter adapter = new NewsCardAdapter(this, NewsCards);
-
-        newsCardListView.setAdapter(adapter);
-
-        newsCardListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                NewsCard currentNewsCard = adapter.getItem(i);
-                Uri newsCardUri = Uri.parse(currentNewsCard.getUrl());
-                Intent websiteIntent = new Intent(Intent.ACTION_VIEW, newsCardUri);
-                startActivity(websiteIntent);
-            }
-        });
-    }
-
     public Boolean checkConnectivity() {
 
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -67,9 +70,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public Loader<ArrayList<NewsCard>> onCreateLoader(int i, Bundle bundle) {
+        return new NewsCardLoader(this, GUARDIAN_REQUEST_URL);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<ArrayList<NewsCard>> loader, ArrayList<NewsCard> o) {
 
 
+    }
 
+    @Override
+    public void onLoaderReset(Loader<ArrayList<NewsCard>> loader) {
+        mAdapter.clear();
+    }
 
 
 }
