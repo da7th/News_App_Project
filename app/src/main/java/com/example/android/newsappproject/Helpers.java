@@ -27,7 +27,6 @@ public class Helpers {
     private Helpers() {
     }
 
-
     public static ArrayList<NewsCard> fetchNewsCardData(String requestUrl) {
 
         URL url = createUrl(requestUrl);
@@ -38,10 +37,8 @@ public class Helpers {
             Log.e(LOG_TAG, "Problem making the HTTP request.", e);
         }
 
-        // Extract relevant fields from the JSON response and create a list of {@link Earthquake}s
         ArrayList<NewsCard> newsCards = extractFeatureFromJson(jsonResponse);
 
-        // Return the list of {@link Earthquake}s
         return newsCards;
     }
 
